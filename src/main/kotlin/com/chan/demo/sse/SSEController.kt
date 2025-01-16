@@ -13,6 +13,7 @@ class SSEController {
 
     @GetMapping("/sse")
     fun connect(): SseEmitter {
+        System.out.println("Connect.")
         val emitter = SseEmitter()
         emitters.add(emitter)
         emitter.onCompletion { emitters.remove(emitter) }
@@ -20,15 +21,19 @@ class SSEController {
         return emitter
     }
 
-    @PostMapping("/sse/broadcast")
+    @PostMapping("/sse/send")
     fun broadcast(): String {
+        System.out.println("브로드캐스트 시작")
         emitters.forEach {
             try {
                 it.send("0,Hello")
+                System.out.println("메시지 전송 완료")
             } catch (e: Exception) {
                 emitters.remove(it)
+                System.out.println("에러 발생: ${e.message}")
             }
         }
-        return "Message sent to all SSE clients."
+        return "Send."
     }
+
 }
