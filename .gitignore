@@ -38,3 +38,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+./keystore.p12
+.properties

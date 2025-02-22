@@ -1,5 +1,7 @@
 package com.chan.demo.socket
 
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.internal.synchronized
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
@@ -16,6 +18,10 @@ class SocketHandler : TextWebSocketHandler() {
         sessions.add(session)
         System.out.println("Connect!")
         session.sendMessage(TextMessage("Hello, Connector."))
+
+        if (sessions.size % 50 == 0) {
+            println("websocket connection count= ${sessions.size}")
+        }
     }
 
     override fun afterConnectionClosed(session: WebSocketSession, status: org.springframework.web.socket.CloseStatus) {
@@ -23,14 +29,14 @@ class SocketHandler : TextWebSocketHandler() {
     }
 
     // 모든 연결된 세션에 메시지 전송
+    @OptIn(InternalCoroutinesApi::class)
     fun broadcastMessage(message: String) {
-        System.out.println("--")
-        System.out.println(sessions.size)
-
         sessions.forEach { session ->
             if (session.isOpen) {
-                println("Send : $message Session : ${session.id}")
-                session.sendMessage(TextMessage(message))
+                synchronized(session) {
+                    println("Send : $message Session : ${session.id}")
+                    session.sendMessage(TextMessage(message))
+                }
             } else {
                 println("Session ${session.id} closed.")
             }
